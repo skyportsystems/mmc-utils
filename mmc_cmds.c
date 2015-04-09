@@ -647,12 +647,15 @@ int do_write_reliability_set(int nargs, char **argv)
 	char *device;
 
 	CHECK(nargs != 4, "Usage: mmc write_reliability set <-y|-n> "
-			"<partition> </path/to/mmcblkX>\n", exit(1));
+			"<partition>|all </path/to/mmcblkX>\n", exit(1));
 
 	if (!strcmp("-y", argv[1]))
 		dry_run = 0;
 
-	partition = strtol(argv[2], NULL, 10);
+	if (!strcmp("all", argv[2]))
+		partition = -1;
+	else
+		partition = strtol(argv[2], NULL, 10);
 	device = argv[3];
 
 	fd = open(device, O_RDWR);
@@ -667,12 +670,15 @@ int do_write_reliability_set(int nargs, char **argv)
 		exit(1);
 	}
 
+#if 0
 	/* assert not PARTITION_SETTING_COMPLETED */
+	/* (doesn't actually matter with some eMMCs e.g. Micron) */
 	if (ext_csd[EXT_CSD_PARTITION_SETTING_COMPLETED])
 	{
 		printf(" Device is already partitioned\n");
 		exit(1);
 	}
+#endif
 
 	/* assert HS_CTRL_REL */
 	if (!(ext_csd[EXT_CSD_WR_REL_PARAM] & HS_CTRL_REL)) {
@@ -681,7 +687,10 @@ int do_write_reliability_set(int nargs, char **argv)
 		exit(1);
 	}
 
-	value = ext_csd[EXT_CSD_WR_REL_SET] | (1<<partition);
+	if (partition == -1)
+		value = 0x1f;
+	else
+		value = ext_csd[EXT_CSD_WR_REL_SET] | (1<<partition);
 	ret = write_extcsd_value(fd, EXT_CSD_WR_REL_SET, value);
 	if (ret) {
 		fprintf(stderr, "Could not write 0x%02x to EXT_CSD[%d] in %s\n",

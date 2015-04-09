@@ -76,8 +76,8 @@ static struct Command commands[] = {
 	  NULL
 	},
 	{ do_write_reliability_set, -2,
-	  "write_reliability set", "<-y|-n> " "<partition> " "<device>\n"
-		"Enable write reliability per partition for the <device>.\nDry-run only unless -y is passed.\nNOTE!  This is a one-time programmable (unreversible) change.",
+	  "write_reliability set", "<-y|-n> " "<partition>|all " "<device>\n"
+		"Enable write reliability per partition (or all partitions) for\nthe <device>. Dry-run only unless -y is passed.\nNOTE!  This is a one-time programmable (unreversible) change.",
 	  NULL
 	},
 	{ do_status_get, -1,
